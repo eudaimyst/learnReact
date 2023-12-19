@@ -1,5 +1,8 @@
 import { useState } from "react";
 
+let boardPieces = {}
+let previousPiece; //stores string of previously clicked piece
+
 const pieces = {
 	king: {
 		notation: "K",
@@ -65,38 +68,54 @@ function BoardRow(alt, count) {
 	return <div className='board-row' key = {'row'+ count} >{rowArray}</div>;
 }
 
-let boardPieces = {}
-
-let selectedPiece
-
 function Square(dark, row, column) {
 	let className; 
 	const rank = 8-row;
 	const file = files[column];
-	const fr = file + rank;
+	const square = file + rank;
 	let pieceString;
-	if (startingSquares.white[fr]) pieceString = 'w'+startingSquares.white[fr].notation;
-	if (startingSquares.black[fr]) pieceString = 'b'+startingSquares.black[fr].notation;
-	boardPieces[fr] = pieceString;
-	const [piece, setPiece] = useState(pieceString)
+	if (!boardPieces[square]) { //if the board pieces have not been intialised
+		if (startingSquares.white[square]) pieceString = 'w'+startingSquares.white[square].notation;
+		else if (startingSquares.black[square]) pieceString = 'b'+startingSquares.black[square].notation;
+		else pieceString = '';
+		boardPieces[square] = pieceString;
+	}
+	const [renderTrigger, triggerUpdate] = useState('');
+	//const [piece, setPiece] = useState(pieceString)
 
 	if (dark) className = 'squareDark';
 	else className = 'squareLight';
 
-	function handleClick(fr, piece) { 
-		console.log('selectedPiece: ' + selectedPiece);
-		console.log(fr + ' clicked, with piece ' + piece);
+	function handleClick(square, clickedPiece) { 
+		console.log('square: ' + square + ' clicked');
 		
-		if (piece) { selectedPiece = piece; setPiece('') }
-		else if (selectedPiece) { setPiece(selectedPiece); selectedPiece = null};
-		console.log('new selectedPiece: ' + selectedPiece);
+		if (clickedPiece) {
+			console.log('piece: ' + clickedPiece + ' clicked');
+			if (previousPiece == null)
+			{
+				console.log('no previous piece')
+				previousPiece = clickedPiece;
+				//setPiece('');
+				boardPieces[square] = '';
+			}
+		 }
+		else {
+			console.log('square has no piece')
+			if (previousPiece) {
+				//setPiece(previousPiece);
+				boardPieces[square] = previousPiece;
+				previousPiece = null
+			};
+		}
+		console.log('new selectedPiece: ' + previousPiece);
+		triggerUpdate(trigger => trigger + ' ');
 	}
 
 	return <button
 		className={className}
-		key={fr}
-		onClick={() => {handleClick(fr, piece)}}
+		key={square}
+		onClick={() => {handleClick(square, boardPieces[square])}}
 		>
-			{piece}
-		</button>;
+			{renderTrigger + boardPieces[square]}
+	</button>;
 }
