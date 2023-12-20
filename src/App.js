@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-let boardPieces = {}
 let previousPiece; //stores string of previously clicked piece
 let takenPiecesStr;
 let status = false;
@@ -8,9 +7,10 @@ let selectedSquare = null;
 let selectedPiece = null;
 
 const gameStates = { awaitingSelection: {text: 'awaiting selection'}, awaitingPlacement: {text: 'awaiting placement'} }
-const sides = { white: {text: 'White', color: 'white'}, black: {text: 'Black', color: 'black'} }
+const sides = { white: {text: 'White', notation: 'w', color: 'white'}, black: {text: 'Black', notation: 'b', color: 'black'} }
 
 const Game = {
+	board: {},
 	turn: sides.white,
 	turnCount: 1,
 	state: gameStates.awaitingSelection,
@@ -19,11 +19,11 @@ const Game = {
 		else Game.turn = sides.white;
 		Game.turnCount++;
 	},
-	SelectPiece: function(square) {
-		if (boardPieces[square].currentPiece) {
-			if (boardPieces[square].currentPiece.side == Game.turn) {
+	SelectPiece: function(pos) {
+		if (Game.board[pos].currentPiece) {
+			if (Game.board[pos].currentPiece.side == Game.turn) {
 				console.log('correct side')
-				selectedPiece = boardPieces[square].currentPiece;
+				selectedPiece = Game.board[pos].currentPiece;
 				Game.state = gameStates.awaitingPlacement;
 			}
 		}
@@ -33,12 +33,10 @@ const Game = {
 	}
 } 
 
-const pieces = {
+const pieceDefs = {
 	king: {
 		notation: 'K',
 		name: 'King',
-		side: null,
-		position: null,
 		movementRules: {
 			directions: [ {x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1},{x: -1, y: 1},{x: -1, y: 0},{x: -1, y: -1},{x: 0, y: -1},{x: 1, y: -1} ],
 			count: 1,
@@ -48,8 +46,6 @@ const pieces = {
 	queen: {
 		notation: 'Q',
 		name: 'Queen',
-		side: null,
-		position: null,
 		movementRules: {
 			directions: [ {x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1},{x: -1, y: 1},{x: -1, y: 0},{x: -1, y: -1},{x: 0, y: -1},{x: 1, y: -1} ],
 			count: 7,
@@ -59,8 +55,6 @@ const pieces = {
 	bishop: {
 		notation: 'B',
 		name: 'Bishop',
-		side: null,
-		position: null,
 		movementRules: {
 			directions: [ {x: 1, y: 1},{x: -1, y: 1},{x: -1, y: -1},{x: 1, y: -1} ],
 			count: 7,
@@ -70,8 +64,6 @@ const pieces = {
 	rook: {
 		notation: 'R',
 		name: 'Rook',
-		side: null,
-		position: null,
 		movementRules: {
 			directions: [ {x: 1, y: 0},{x: -1, y: 0},{x: 0, y: 1},{x: 0, y: -1} ],
 			count: 7,
@@ -81,8 +73,6 @@ const pieces = {
 	whitePawn: {
 		notation: 'P',
 		name: 'Pawn',
-		side: sides.white,
-		position: null,
 		movementRules: {
 			directions: [ {x: 0, y: 1} ],
 			count: 1,
@@ -92,8 +82,6 @@ const pieces = {
 	blackPawn: {
 		notation: 'P',
 		name: 'Pawn',
-		side: sides.black,
-		position: null,
 		movementRules: {
 			directions: [ {x: 0, y: -1} ],
 			count: 1,
@@ -103,8 +91,6 @@ const pieces = {
 	knight: {
 		notation: 'N',
 		name: 'Knight',
-		side: null,
-		position: null,
 		movementRules: {
 			directions: [ {x: 1, y: 2}, {x: 2, y: 1}, {x: 2, y: -1}, {x: 1, y: -2}, {x: -1, y: -2}, {x: -2, y: -1}, {x: -2, y: 1}, {x: -1, y: 2} ],
 			count: 1,
@@ -115,22 +101,74 @@ const pieces = {
 
 const startingSquares = {
 	white: {
-		A1: pieces.rook, B1: pieces.knight, C1: pieces.bishop, D1: pieces.queen,
-		E1: pieces.king, F1: pieces.bishop, G1: pieces.knight, H1: pieces.rook,
-		A2: pieces.whitePawn, B2: pieces.whitePawn, C2: pieces.whitePawn, D2: pieces.whitePawn,
-		E2: pieces.whitePawn, F2: pieces.whitePawn, G2: pieces.whitePawn, H2: pieces.whitePawn,
+		A1: pieceDefs.rook, B1: pieceDefs.knight, C1: pieceDefs.bishop, D1: pieceDefs.queen,
+		E1: pieceDefs.king, F1: pieceDefs.bishop, G1: pieceDefs.knight, H1: pieceDefs.rook,
+		A2: pieceDefs.whitePawn, B2: pieceDefs.whitePawn, C2: pieceDefs.whitePawn, D2: pieceDefs.whitePawn,
+		E2: pieceDefs.whitePawn, F2: pieceDefs.whitePawn, G2: pieceDefs.whitePawn, H2: pieceDefs.whitePawn,
 	},
 	black: {
-		A8: pieces.rook, B8: pieces.knight, C8: pieces.bishop, D8: pieces.queen,
-		E8: pieces.king, F8: pieces.bishop, G8: pieces.knight, H8: pieces.rook,
-		A7: pieces.blackPawn, B7: pieces.blackPawn, C7: pieces.blackPawn, D7: pieces.blackPawn,
-		E7: pieces.blackPawn, F7: pieces.blackPawn, G7: pieces.blackPawn, H7: pieces.blackPawn,
+		A8: pieceDefs.rook, B8: pieceDefs.knight, C8: pieceDefs.bishop, D8: pieceDefs.queen,
+		E8: pieceDefs.king, F8: pieceDefs.bishop, G8: pieceDefs.knight, H8: pieceDefs.rook,
+		A7: pieceDefs.blackPawn, B7: pieceDefs.blackPawn, C7: pieceDefs.blackPawn, D7: pieceDefs.blackPawn,
+		E7: pieceDefs.blackPawn, F7: pieceDefs.blackPawn, G7: pieceDefs.blackPawn, H7: pieceDefs.blackPawn,
 	}
 }
 
 const files = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
+function makePiece(def, side, position) { //given a definition table for a piece, returns a new piece with those properties 
+	let piece = {
+		notation: def.notation,
+		name: def.name,
+		side: side,
+		position: position,
+		movementRules: {}
+	}
+	return piece
+}
+
+function makeSquare(pos) //makes a "square" on the board at the given notation position
+{
+	let square = {};
+	square.currentPiece = null;
+	square.selected = false;
+	if (startingSquares.white[pos]) {
+		square.currentPiece = makePiece(startingSquares.white[pos], sides.white, pos);
+	}
+	else if (startingSquares.black[pos]) {
+		square.currentPiece = makePiece(startingSquares.black[pos], sides.black, pos);
+	}
+	return square;
+}
+
+function initBoard() {
+	
+	let board = {}
+
+	board.checkSquare = function(pos) {
+		if (board[pos].currentPiece) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}	
+	for (let i = 0; i < 8; i++) {
+		let rank = 8-i;
+		for (let j = 0; j < 8; j++) {
+			let file = files[j];
+			let pos = file+rank;
+			board[pos] = makeSquare(pos);
+		}
+	}
+	return board
+}
+
 export default function App() {
+
+	Game.board = initBoard();
+	//console.log(Game.board)	
+
 	const turnDisp = <p key = 'turnDisp'>Turn: {Game.turnCount+", "+Game.turn.text}</p>;
 	const stateDisp = <p key = 'stateDisp'>State: {Game.state.text}</p>;
 	const selectedSquareDisp = <p key = 'selectedSquareDisp'>selectedSquare:{selectedSquare}</p>;
@@ -138,99 +176,62 @@ export default function App() {
 	//const currentPiece = <h1 key = 'cph'>current piece:{previousPiece}</h1>;
 
 	let renderArray = [] //elements are added to this which get returned to the document root
-	GameBoard().forEach((element, i) => {
+	BoardElements().forEach((element, i) => {
 		renderArray.push(element);
 	});
 	renderArray.push(turnDisp, stateDisp, selectedSquareDisp, selectedPieceDisp )
 	return renderArray
 }
 
-function GameBoard() {
+function BoardElements() {
 	let boardArray = [] //elements are added to this which get returned to the default function
 	for (let i = 0; i < 8; i++) {
-		if (i % 2 === 0) boardArray.push(BoardRow(1, i));
-		else boardArray.push(BoardRow(0, i));
+		if (i % 2 === 0) boardArray.push(BoardRowElement(1, i));
+		else boardArray.push(BoardRowElement(0, i));
 	}
-	console.log(boardArray); //debug
+	//console.log(boardArray); //debug
 	return boardArray;
 }
 
-function BoardRow(alt, count) {
+function BoardRowElement(alt, count) {
 	let rowArray = []; //elements are added to this which get returned to the GameBoard function
 	for (let i = 0; i < 8; i++) {
-		if ((i + alt) % 2 === 0) rowArray.push(Square(true, count, i));//if odd square is dark
-		else rowArray.push(Square(false, count, i));
+		if ((i + alt) % 2 === 0) rowArray.push(SquareElement(true, count, i));//if odd square is dark
+		else rowArray.push(SquareElement(false, count, i));
 	}
 	return <div className='board-row' key = {'row'+ count} >{rowArray}</div>;
 }
 
-function Square(dark, row, column) {
+function SquareElement(dark, row, col) {
 	//console.log(boardPieces)
 	let className; 
-	const rank = 8-row;
-	const file = files[column];
-	const square = file + rank;
-	let pieceString;
-	if (!boardPieces[square]) { //if the board pieces have not been intialised
-		boardPieces[square] = {
-			currentPiece: null, //ensures boardPieces table entry is initialised at index square with currentPiece property (even if nil)
-		}
-		//places the piece data from the startingSquares table into the boardPieces table
-		if (startingSquares.white[square]) {
-			boardPieces[square].currentPiece = startingSquares.white[square];
-			boardPieces[square].currentPiece.side = sides.white; //set the correct side for the piece
-			console.log('adding white piece '+square+', '+boardPieces[square].currentPiece.notation);
-			console.log(boardPieces[square].currentPiece.side);
-		}
-		else if (startingSquares.black[square]) {
-			boardPieces[square].currentPiece = startingSquares.black[square];
-			boardPieces[square].currentPiece.side = sides.black;
-			console.log('adding black piece '+square+', '+boardPieces[square].currentPiece.notation);
-			console.log(boardPieces[square].currentPiece.side);
-		}
-	}
-	const [renderTrigger, triggerUpdate] = useState('');
-
 	if (dark) className = 'squareDark';
 	else className = 'squareLight';
+	const pos = files[col]+(8-row); //position in notation format of row and col
+	
+	const [renderTrigger, triggerUpdate] = useState('');
 
-	function handleClick(square) {
+	function handleClick(pos) {
 		console.log('-----------------------');
-		console.log('square: ' + square + ' clicked');
-		selectedSquare = square;
+		console.log('pos: ' + pos + ' clicked');
+		selectedSquare = pos;
 		let clickedPiece = null;
-		if (boardPieces[square].currentPiece) {
-			clickedPiece = boardPieces[square].currentPiece;
-			console.log(clickedPiece.side);
-			Game.SelectPiece(square);
+		if (Game.board[pos].currentPiece) {
+			clickedPiece = Game.board[pos].currentPiece;
+			//console.log(clickedPiece.side);
+			Game.SelectPiece(pos);
 		}
-		/*
-		if (clickedPiece) {
-			console.log('piece: ' + clickedPiece + ' clicked');
-			if (previousPiece == null)
-			{
-				console.log('no previous piece');
-				previousPiece = clickedPiece;
-				boardPieces[square] = ' ';
-			}
-		 }
-		else {
-			console.log('square has no piece')
-			if (previousPiece) {
-				//setPiece(previousPiece);
-				boardPieces[square] = previousPiece;
-				previousPiece = null
-			};
-		}
-		*/
-		triggerUpdate(trigger => square);
+		triggerUpdate(trigger => pos);
 	}
 
 	let content = ''
-	if (boardPieces[square].currentPiece) content = boardPieces[square].currentPiece.notation;
+	if (Game.board[pos].currentPiece) {
+		if (Game.board[pos].currentPiece) {
+			content = Game.board[pos].currentPiece.side.notation + Game.board[pos].currentPiece.notation;
+		}
+	}
 
-	return <button className={className} key={square} onClick={ () => {handleClick(square)} }>
-		{content} 
+	return <button className={className} key={pos} onClick={ () => {handleClick(pos)} }>
+		{content}   
 	</button>;
-	
 }
