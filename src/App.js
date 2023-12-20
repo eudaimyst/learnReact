@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 let boardPieces = {}
 let previousPiece; //stores string of previously clicked piece
@@ -7,22 +7,22 @@ let status = false;
 let selectedSquare = null;
 let selectedPiece = null;
 
-const gameStates = { awaitingSelection: {text: "awaiting selection"}, awaitingPlacement: {text: "awaiting placement"} }
+const gameStates = { awaitingSelection: {text: 'awaiting selection'}, awaitingPlacement: {text: 'awaiting placement'} }
 
 const Game = {
-	turn: "white",
+	turn: 'white',
 	turnCount: 1,
 	state: gameStates.awaitingSelection,
 	NextTurn: function() {
-		if (Game.turn == "white") Game.turn = "black";
-		else Game.turn = "white";
+		if (Game.turn == 'white') Game.turn = 'black';
+		else Game.turn = 'white';
 		Game.turnCount++;
 	},
 	SelectPiece: function(square) {
-		if (boardPieces[square]) {
-			if (boardPieces[square].side == Game.turn) {
-				selectedPiece = boardPieces[square];
-				selectedSquare = square;
+		if (boardPieces[square].currentPiece) {
+			if (boardPieces[square].currentPiece.side == Game.turn) {
+				console.log('correct side')
+				selectedPiece = boardPieces[square].currentPiece;
 				Game.state = gameStates.awaitingPlacement;
 			}
 		}
@@ -34,37 +34,44 @@ const Game = {
 
 const pieces = {
 	king: {
-		notation: "K",
+		notation: 'K',
+		name: 'King',
 		side: null,
 		position: null,
 	},
 	queen: {
-		notation: "Q",
+		notation: 'Q',
+		name: 'Queen',
 		side: null,
 		position: null,
 	},
 	bishop: {
-		notation: "B",
+		notation: 'B',
+		name: 'Bishop',
 		side: null,
 		position: null,
 	},
 	rook: {
-		notation: "R",
+		notation: 'R',
+		name: 'Rook',
 		side: null,
 		position: null,
 	},
 	whitePawn: {
-		notation: "P",
-		side: "white",
+		notation: 'P',
+		name: 'Pawn',
+		side: 'white',
 		position: null,
 	},
 	blackPawn: {
-		notation: "P",
-		side: "black",
+		notation: 'P',
+		name: 'Pawn',
+		side: 'black',
 		position: null,
 	},
 	knight: {
-		notation: "N",
+		notation: 'N',
+		name: 'Knight',
 		side: null,
 		position: null,
 	}
@@ -85,19 +92,20 @@ const startingSquares = {
 	}
 }
 
-const files = ["A", "B", "C", "D", "E", "F", "G", "H"];
+const files = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 export default function App() {
-	const selectedSquareDisp = <h1 key = 'selectedSquare'>selectedSquare:{selectedSquare}</h1>;
-	const turnDisp = <p key = 'turn'>Turn: {Game.turn}</p>;
-	const stateDisp = <p key = 'status'>State: {Game.state.text}</p>;
+	const turnDisp = <p key = 'turnDisp'>Turn: {Game.turnCount+", "+Game.turn}</p>;
+	const stateDisp = <p key = 'stateDisp'>State: {Game.state.text}</p>;
+	const selectedSquareDisp = <p key = 'selectedSquareDisp'>selectedSquare:{selectedSquare}</p>;
+	const selectedPieceDisp = <p key = 'selectedPieceDisp'> selectedPiece:{selectedPiece ? selectedPiece.side+' '+selectedPiece.name:''}</p>; // (if) x ?(then) y :(else) z 
 	//const currentPiece = <h1 key = 'cph'>current piece:{previousPiece}</h1>;
 
 	let renderArray = [] //elements are added to this which get returned to the document root
 	GameBoard().forEach((element, i) => {
 		renderArray.push(element);
 	});
-	renderArray.push(turnDisp, stateDisp )
+	renderArray.push(turnDisp, stateDisp, selectedSquareDisp, selectedPieceDisp )
 	return renderArray
 }
 
@@ -127,18 +135,13 @@ function Square(dark, row, column) {
 	const square = file + rank;
 	let pieceString;
 	if (!boardPieces[square]) { //if the board pieces have not been intialised
-		/*
-		if (startingSquares.white[square]) pieceString = 'w'+startingSquares.white[square].notation;
-		else if (startingSquares.black[square]) pieceString = 'b'+startingSquares.black[square].notation;
-		else pieceString = '';
-		boardPieces[square] = pieceString;
-		*/
 		boardPieces[square] = {
-			currentPiece: null,
+			currentPiece: null, //ensures boardPieces table entry is initialised at index of square as key with currentPiece property (even if nil)
 		}
+		//places the piece data from the startingSquares table into the boardPieces table
 		if (startingSquares.white[square]) {
 			boardPieces[square].currentPiece = startingSquares.white[square];
-			boardPieces[square].currentPiece.side = 'white';
+			boardPieces[square].currentPiece.side = 'white'; //set the correct side for the piece
 		}
 		else if (startingSquares.black[square]) {
 			boardPieces[square].currentPiece = startingSquares.black[square];
@@ -154,6 +157,7 @@ function Square(dark, row, column) {
 	function handleClick(square) {
 		console.log('-----------------------');
 		console.log('square: ' + square + ' clicked');
+		selectedSquare = square;
 		let clickedPiece = null;
 		if (boardPieces[square].currentPiece) {
 			//clickedPiece = boardPieces[square].currentPiece;
@@ -179,7 +183,7 @@ function Square(dark, row, column) {
 			};
 		}
 		*/
-		//triggerUpdate(trigger => trigger + ' ');
+		triggerUpdate(trigger => trigger + ' ');
 	}
 
 	let content = ''
