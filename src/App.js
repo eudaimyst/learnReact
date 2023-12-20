@@ -5,6 +5,7 @@ let takenPiecesStr;
 let status = false;
 let selectedSquare = null;
 let selectedPiece = null;
+let clickedPiece = null;
 
 const gameStates = { awaitingSelection: {text: 'awaiting selection'}, awaitingPlacement: {text: 'awaiting placement'} }
 const sides = { white: {text: 'White', notation: 'w', color: 'white'}, black: {text: 'Black', notation: 'b', color: 'black'} }
@@ -22,14 +23,22 @@ const Game = {
 	SelectPiece: function(pos) {
 		if (Game.board[pos].currentPiece) {
 			if (Game.board[pos].currentPiece.side == Game.turn) {
-				console.log('correct side')
+				console.log('correct side, selected '+Game.board[pos].currentPiece.name);
 				selectedPiece = Game.board[pos].currentPiece;
 				Game.state = gameStates.awaitingPlacement;
 			}
 		}
 	},
-	PlacePiece: function(square) {
-
+	PlacePiece: function(pos) {
+		console.log('moving '+selectedPiece.name+' from '+selectedPiece.position+' to '+pos);
+		Game.board[selectedPiece.position].currentPiece = null;
+		Game.board[pos].currentPiece = selectedPiece;
+		selectedPiece.position = pos;
+		selectedPiece = null;
+		selectedSquare = null; //clear selected square
+		Game.state = gameStates.awaitingSelection;
+		Game.NextTurn(); //next turn
+		console.log(Game);
 	}
 } 
 
@@ -163,10 +172,11 @@ function initBoard() {
 	}
 	return board
 }
+Game.board = initBoard();
+
 
 export default function App() {
 
-	Game.board = initBoard();
 	//console.log(Game.board)	
 
 	const turnDisp = <p key = 'turnDisp'>Turn: {Game.turnCount+", "+Game.turn.text}</p>;
@@ -204,24 +214,31 @@ function BoardRowElement(alt, count) {
 
 function SquareElement(dark, row, col) {
 	//console.log(boardPieces)
+
+	//set classname for css to colour square
 	let className; 
 	if (dark) className = 'squareDark';
 	else className = 'squareLight';
 	const pos = files[col]+(8-row); //position in notation format of row and col
 	
-	const [renderTrigger, triggerUpdate] = useState('');
+	const [renderTrigger, triggerUpdate] = useState(''); //call triggerUpdate to update variable for react to re-render
 
 	function handleClick(pos) {
 		console.log('-----------------------');
 		console.log('pos: ' + pos + ' clicked');
-		selectedSquare = pos;
-		let clickedPiece = null;
-		if (Game.board[pos].currentPiece) {
-			clickedPiece = Game.board[pos].currentPiece;
-			//console.log(clickedPiece.side);
-			Game.SelectPiece(pos);
+		selectedSquare = pos; //stores which square is clicked for display
+		if (Game.state == gameStates.awaitingSelection)
+		{
+			if (Game.board[pos].currentPiece) {
+				clickedPiece = Game.board[pos].currentPiece;
+				Game.SelectPiece(pos);
+			}
 		}
-		triggerUpdate(trigger => pos);
+		else if (Game.state == gameStates.awaitingPlacement) {
+			//here we will call for checks to see if valid movement
+			Game.PlacePiece(pos);
+		};
+		triggerUpdate(trigger => pos); //call trigger for react to re-render
 	}
 
 	let content = ''
