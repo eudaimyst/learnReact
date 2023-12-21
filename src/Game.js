@@ -4,95 +4,23 @@ import * as Board from "./GameBoard.js";
 
 let turn = null;
 let turnCount = 0;
-let state = G.gameStates.awaitingSelection;
+let state = null;
+let selectedSquare = null;
 let selectedPiece = null;
 
-const pieceDefinitions = {
-	king: {
-		notation: 'K',
-		name: 'King',
-		movementRules: {
-			directions: [ {x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1},{x: -1, y: 1},{x: -1, y: 0},{x: -1, y: -1},{x: 0, y: -1},{x: 1, y: -1} ],
-			count: 1,
-			jumps: false
-		}
-	},
-	queen: {
-		notation: 'Q',
-		name: 'Queen',
-		movementRules: {
-			directions: [ {x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1},{x: -1, y: 1},{x: -1, y: 0},{x: -1, y: -1},{x: 0, y: -1},{x: 1, y: -1} ],
-			count: 7,
-			jumps: false
-		}
-	},
-	bishop: {
-		notation: 'B',
-		name: 'Bishop',
-		movementRules: {
-			directions: [ {x: 1, y: 1},{x: -1, y: 1},{x: -1, y: -1},{x: 1, y: -1} ],
-			count: 7,
-			jumps: false
-		}
-	},
-	rook: {
-		notation: 'R',
-		name: 'Rook',
-		movementRules: {
-			directions: [ {x: 1, y: 0},{x: -1, y: 0},{x: 0, y: 1},{x: 0, y: -1} ],
-			count: 7,
-			jumps: false
-		}
-	},
-	whitePawn: {
-		notation: 'P',
-		name: 'Pawn',
-		movementRules: {
-			directions: [ {x: 0, y: 1} ],
-			count: 1,
-			jumps: false
-		}
-	},
-	blackPawn: {
-		notation: 'P',
-		name: 'Pawn',
-		movementRules: {
-			directions: [ {x: 0, y: -1} ],
-			count: 1,
-			jumps: false
-		}
-	},
-	knight: {
-		notation: 'N',
-		name: 'Knight',
-		movementRules: {
-			directions: [ {x: 1, y: 2}, {x: 2, y: 1}, {x: 2, y: -1}, {x: 1, y: -2}, {x: -1, y: -2}, {x: -2, y: -1}, {x: -2, y: 1}, {x: -1, y: 2} ],
-			count: 1,
-			jumps: true
-		}
-	}
+let renderTrigger = null
+function RegRenderTrigger(o) {
+	renderTrigger = o;
 }
-
-let p = pieceDefinitions; //just readability
-const startingSquares = {
-	white: {
-		A1: p.rook, B1: p.knight, C1: p.bishop, D1: p.queen,
-		E1: p.king, F1: p.bishop, G1: p.knight, H1: p.rook,
-		A2: p.whitePawn, B2: p.whitePawn, C2: p.whitePawn, D2: p.whitePawn,
-		E2: p.whitePawn, F2: p.whitePawn, G2: p.whitePawn, H2: p.whitePawn,
-	},
-	black: {
-		A8: p.rook, B8: p.knight, C8: p.bishop, D8: p.queen,
-		E8: p.king, F8: p.bishop, G8: p.knight, H8: p.rook,
-		A7: p.blackPawn, B7: p.blackPawn, C7: p.blackPawn, D7: p.blackPawn,
-		E7: p.blackPawn, F7: p.blackPawn, G7: p.blackPawn, H7: p.blackPawn,
-	}
+function Update() {
+	renderTrigger(); //call trigger for react to re-render
 }
 
 function Init() {
 	console.log('Initializing game setup');
-	if (!Board.Init()) return false;
+	Board.Init() ? console.log('board initialized') : console.log('board failed to initialize');
 	turn = G.sides.white;
+	state = G.gameStates.awaitingSelection;
 	turnCount = 1
 	return true;
 }
@@ -106,35 +34,38 @@ function NextTurn() {
 }
 
 function SelectPiece (pos) {
-	if (board[pos].currentPiece) {
-		if (board[pos].currentPiece.side === turn) {
-			console.log('correct side, selected '+board[pos].currentPiece.name);
-			selectedPiece = board[pos].currentPiece;
-			state = G.gameStates.awaitingPlacement;
-			return true;
-		}
+	let piece = Board.GetPieceAtPos(pos)
+	if (piece == false) return false; //no piece at provided pos on the board
+	else if (piece.side === turn) {
+		console.log('correct side, selected '+piece.name);
+		selectedPiece = piece;
+		state = G.gameStates.awaitingPlacement; console.log('state: '+state.text);
 		return true;
 	}
-	return false; //no piece at provided pos on the board
+	return false;
 }
 
 function PlacePiece (pos) {
-	console.log('moving '+selectedPiece.name+' from '+selectedPiece.position+' to '+pos);
-	board[selectedPiece.position].currentPiece = null;
-	board[pos].currentPiece = selectedPiece;
-	selectedPiece.position = pos;
-	selectedPiece = null;
-	selectedSquare = null; //clear selected square
-	state = G.gameStates.awaitingSelection;
-	if (NextTurn()) { //next turn
+	if (!Board.GetPieceAtPos(pos)) {
+		Board.MovePiece(selectedPiece.position, pos);
+		selectedPiece.position = pos;
+		state = G.gameStates.awaitingSelection; console.log('state: '+state.text);
 		return true;
 	}
+	console.log('cant move piece, square is occupied') //temporary
+	return false;
 }
 
-const GetBoard = () => board;
+function SelectSquare (pos) {
+	if (state == G.gameStates.awaitingSelection) SelectPiece(pos);
+	else if (state == G.gameStates.awaitingPlacement) PlacePiece(pos);
+}
+
+const GetBoard = () => Board;
 const GetTurn = () => turn;
 const GetTurnCount = () => turnCount;
 const GetState = () => state;
+const GetSelectedPiece = () => selectedPiece;
+const GetSelectedSquare = () => selectedSquare;
 
-
-export { Init, GetBoard, GetTurn, GetTurnCount, GetState, NextTurn, SelectPiece, PlacePiece }; 
+export { Init, GetBoard, GetTurn, GetTurnCount, GetState, NextTurn, SelectSquare, SelectPiece, GetSelectedPiece, GetSelectedSquare, RegRenderTrigger, Update }; 
