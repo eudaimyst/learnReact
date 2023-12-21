@@ -26,10 +26,12 @@ function Init() {
 }
 
 function NextTurn() {
+
 	if (turn === G.sides.white) turn = G.sides.black;
 	else if (turn === G.sides.black) turn = G.sides.white;
 	else return false; //misassigned turn variable
 	state = G.gameStates.awaitingSelection; //initial state of any turn is to wait selecting a peice
+	turnCount++
 	return true;
 }
 
@@ -40,20 +42,40 @@ function SelectPiece (pos) {
 		console.log('correct side, selected '+piece.name);
 		selectedPiece = piece;
 		state = G.gameStates.awaitingPlacement; console.log('state: '+state.text);
+		console.log(piece)
+		console.log(Piece.CalculateMoves(piece))
 		return true;
 	}
-	return false;
+	return false; //piece is at pos but it is not of the correct side
 }
 
 function PlacePiece (pos) {
 	if (!Board.GetPieceAtPos(pos)) {
-		Board.MovePiece(selectedPiece.position, pos);
-		selectedPiece.position = pos;
-		state = G.gameStates.awaitingSelection; console.log('state: '+state.text);
-		return true;
+		if (Piece.CalculateMoves(selectedPiece).possibleMoves.includes(pos)) {
+			console.log('valid move, placing piece')
+			Board.MovePiece(selectedPiece.position, pos);
+			state = G.gameStates.awaitingSelection; console.log('state: '+state.text);
+			NextTurn();
+			return true;
+		}
+		else {
+			console.log('invalid move, not placing piece')
+			return false;
+		}
 	}
-	console.log('cant move piece, square is occupied') //temporary
-	return false;
+	else { //already piece at proposed position
+		if (Piece.CalculateMoves(selectedPiece).takingMoves.includes(pos)) {
+			console.log('valid move, taking piece')
+			Board.MovePiece(selectedPiece.position, pos);
+			state = G.gameStates.awaitingSelection; console.log('state: '+state.text);
+			NextTurn();
+			return true;
+		}
+		else {
+			console.log('cant move piece, square is occupied')
+			return false;
+		}
+	}
 }
 
 function SelectSquare (pos) {

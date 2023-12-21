@@ -37,17 +37,42 @@ function makeSquare(pos) //makes a "square" on the board at the given notation p
 function MovePiece(from, to) {
 	if (board[from].currentPiece) {
 		board[to].currentPiece = board[from].currentPiece;
+		board[to].currentPiece.position = to;
 		board[from].currentPiece = null;
 		return true;
 	}
 	return false;
 }
 
+
 function GetPieceAtPos(pos) {
 	if (board[pos].currentPiece) {
 		return board[pos].currentPiece;
 	}
 	return false;
+}
+
+function GetSquareByXY(x, y) {
+	let pos = GetPosByXY(x, y);
+	if (board[pos]) return board[pos];
+	return false
+}
+function GetPosByXY(x, y) {
+	let file = G.files[x-1];
+	let rank = y
+	let pos = file+rank;
+	console.log(x, y, pos);
+	if (board[pos]) return pos;
+	else {
+		console.log(x, y, 'out of range')
+		return false;
+	}
+}
+function GetXYByPos(pos) {
+	//console.log(pos)
+	let file = pos.slice(0,1);
+	let rank = pos.slice(1,2);
+	return {x: G.invFiles[file],y: rank}
 }
 
 function Init() {
@@ -62,4 +87,4 @@ function Init() {
 	return true
 }
 
-export { Init, GetPieceAtPos, MovePiece }
+export { Init, GetPieceAtPos, GetSquareByXY,GetPosByXY, GetXYByPos, MovePiece }
