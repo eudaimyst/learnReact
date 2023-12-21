@@ -19,7 +19,7 @@ const pieceDefinitions = {
 		name: 'Queen',
 		movementRules: {
 			directions: [ {x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1},{x: -1, y: 1},{x: -1, y: 0},{x: -1, y: -1},{x: 0, y: -1},{x: 1, y: -1} ],
-			maxMoves: 7,
+			maxMoves: -1, //
 			jumps: false
 		}
 	},
@@ -28,7 +28,7 @@ const pieceDefinitions = {
 		name: 'Bishop',
 		movementRules: {
 			directions: [ {x: 1, y: 1},{x: -1, y: 1},{x: -1, y: -1},{x: 1, y: -1} ],
-			maxMoves: 7,
+			maxMoves: -1,
 			jumps: false
 		}
 	},
@@ -37,7 +37,7 @@ const pieceDefinitions = {
 		name: 'Rook',
 		movementRules: {
 			directions: [ {x: 1, y: 0},{x: -1, y: 0},{x: 0, y: 1},{x: 0, y: -1} ],
-			maxMoves: 7,
+			maxMoves: -1,
 			jumps: false
 		}
 	},
@@ -47,7 +47,7 @@ const pieceDefinitions = {
 		movementRules: {
 			directions: [ {x: 0, y: 1} ],
 			firstMove: [ {x: 0, y: 1}, {x: 0, y: 2} ], //for pawns that can move 2 squares on their first move
-			takingDirections: [ {x: 1, y: -1}, {x: -1, y: -1} ],
+			takingDirections: [ {x: 1, y: 1}, {x: -1, y: 1} ],
 			maxMoves: 1,
 			jumps: false
 		}

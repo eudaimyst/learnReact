@@ -11,17 +11,19 @@ export default function App() {
 	const selectedSquareDisp = <p key = 'selectedSquareDisp'>selectedSquare:{Game.GetSelectedSquare()}</p>;
 	const selectedPieceDisp = <p key = 'selectedPieceDisp'> selectedPiece:{Game.GetSelectedPiece() ? Game.GetSelectedPiece().side.text+' '+Game.GetSelectedPiece().name:''}</p>; // (if) x ?(then) y :(else) z 
 	let renderArray = [];
+	let board = [];
 	BoardLayout().forEach((element, i) => { //calls BoardElements to build rows and squares and adds them to array
-		renderArray.push(element);
+		board.push(element);
 	});
-	renderArray.push(turnDisp, stateDisp, selectedSquareDisp, selectedPieceDisp )
+	let boardContainer = <div key="boardContainer">{board}</div>;
+	renderArray.push(turnDisp, stateDisp, selectedSquareDisp, selectedPieceDisp, boardContainer )
 
 
 	//useState workaround to trigger re-renders as fn Update
 	const [renderTrigger, triggerUpdate] = useState(0); //register state variable
 	const Update = () => triggerUpdate(t => t + 1); //iterate using state callback
 	Game.RegRenderTrigger(Update); //pass fn to game to trigger re-render from anywhere
-	
+
 	return <>{renderTrigger}{renderArray}</> //renderTrigger as sibling to ensure renderArray is re-rendered on an update
 }
 
@@ -43,11 +45,22 @@ function BoardLayout() {
 				Game.SelectSquare(pos);
 				Game.Update();
 			}
-			return <button className={dark ? 'squareDark' : 'squareLight'} key={pos} onClick={ () => {handleClick(pos)} }>
+			function handleHover(pos, enter) {
+				//console.log('hovering over: '+pos);
+				Game.HighlightSquare(pos);
+				Game.Update();
+
+			}
+			return <button className={dark ? 'squareDark' : 'squareLight'} key={pos} onClick={ () => {handleClick(pos)}} onMouseEnter={() => {handleHover(pos, true)}} onMouseLeave={() => {handleHover(pos, false)}}>
 				{Game.GetBoard().GetPieceAtPos(pos) ? Game.GetBoard().GetPieceAtPos(pos).notation : '' }   
 			</button>;
 		}
-		return <div className='board-row' key = {'row'+ count} >{rowArray}</div>;
+		let fileNotation = <button className='square' key = {'file'+G.files[count]}>{G.files[count]}</button>
+		return <div className='board-row' key = {'row'+ count} >{rowArray}{fileNotation}</div>;
+	}
+	for (let i = 1; i <= 8; i++) {
+		let rankNotation = <button className='square' key = {'rank'+i} >{i}</button>
+		boardArray.push(rankNotation);
 	}
 	return boardArray;
 }

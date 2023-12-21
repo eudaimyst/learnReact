@@ -35,15 +35,27 @@ function makeSquare(pos) //makes a "square" on the board at the given notation p
 }
 
 function MovePiece(from, to) {
-	if (board[from].currentPiece) {
-		board[to].currentPiece = board[from].currentPiece;
-		board[to].currentPiece.position = to;
+	let movingPiece = board[from].currentPiece;
+	if (movingPiece) {
+		board[to].currentPiece = movingPiece;
+		movingPiece.MovePiece(movingPiece, from, to); //call function on piece to increase movecount and update current position
 		board[from].currentPiece = null;
 		return true;
 	}
+	console.log('Error: no piece to move');
 	return false;
 }
 
+function GetPieces()
+{
+	//for each square on the board check if it has pieces and return a new array with the pieces
+	let pieces = [];
+	for (let pos in board) {
+		if (board[pos].currentPiece) pieces.push(board[pos].currentPiece);
+	}
+	console.log(pieces);
+	return pieces;
+}
 
 function GetPieceAtPos(pos) {
 	if (board[pos].currentPiece) {
@@ -57,14 +69,15 @@ function GetSquareByXY(x, y) {
 	if (board[pos]) return board[pos];
 	return false
 }
+
 function GetPosByXY(x, y) {
 	let file = G.files[x-1];
 	let rank = y
 	let pos = file+rank;
-	console.log(x, y, pos);
+	//console.log(x, y, pos);
 	if (board[pos]) return pos;
 	else {
-		console.log(x, y, 'out of range')
+		//console.log(x, y, 'out of range')
 		return false;
 	}
 }
@@ -87,4 +100,6 @@ function Init() {
 	return true
 }
 
-export { Init, GetPieceAtPos, GetSquareByXY,GetPosByXY, GetXYByPos, MovePiece }
+function GetSize() {return 8 } //future expansion for different size boards, used for piece movement rules
+
+export { Init, GetPieceAtPos, GetSquareByXY,GetPosByXY, GetXYByPos, MovePiece, GetPieces, GetSize }

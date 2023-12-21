@@ -8,6 +8,8 @@ let state = null;
 let selectedSquare = null;
 let selectedPiece = null;
 
+let pieces = []; //after board is created gets reference to all pieces
+
 let renderTrigger = null
 function RegRenderTrigger(o) {
 	renderTrigger = o;
@@ -19,14 +21,17 @@ function Update() {
 function Init() {
 	console.log('Initializing game setup');
 	Board.Init() ? console.log('board initialized') : console.log('board failed to initialize');
-	turn = G.sides.white;
+	pieces = Board.GetPieces();
+	//for each piece, calculate possible moves
+	for (let piece of pieces) { Piece.CalculateMoves(piece) }
+	turn = G.sides.white;	
 	state = G.gameStates.awaitingSelection;
 	turnCount = 1
 	return true;
 }
 
 function NextTurn() {
-
+	for (let piece of pieces) { Piece.CalculateMoves(piece) }
 	if (turn === G.sides.white) turn = G.sides.black;
 	else if (turn === G.sides.black) turn = G.sides.white;
 	else return false; //misassigned turn variable
@@ -51,7 +56,7 @@ function SelectPiece (pos) {
 
 function PlacePiece (pos) {
 	if (!Board.GetPieceAtPos(pos)) {
-		if (Piece.CalculateMoves(selectedPiece).possibleMoves.includes(pos)) {
+		if (selectedPiece.possibleMoves.includes(pos)) {
 			console.log('valid move, placing piece')
 			Board.MovePiece(selectedPiece.position, pos);
 			state = G.gameStates.awaitingSelection; console.log('state: '+state.text);
@@ -64,7 +69,7 @@ function PlacePiece (pos) {
 		}
 	}
 	else { //already piece at proposed position
-		if (Piece.CalculateMoves(selectedPiece).takingMoves.includes(pos)) {
+		if (selectedPiece.takingMoves.includes(pos)) {
 			console.log('valid move, taking piece')
 			Board.MovePiece(selectedPiece.position, pos);
 			state = G.gameStates.awaitingSelection; console.log('state: '+state.text);
@@ -83,6 +88,10 @@ function SelectSquare (pos) {
 	else if (state == G.gameStates.awaitingPlacement) PlacePiece(pos);
 }
 
+function HighlightSquare(pos) {
+
+}
+
 const GetBoard = () => Board;
 const GetTurn = () => turn;
 const GetTurnCount = () => turnCount;
@@ -90,4 +99,4 @@ const GetState = () => state;
 const GetSelectedPiece = () => selectedPiece;
 const GetSelectedSquare = () => selectedSquare;
 
-export { Init, GetBoard, GetTurn, GetTurnCount, GetState, NextTurn, SelectSquare, SelectPiece, GetSelectedPiece, GetSelectedSquare, RegRenderTrigger, Update }; 
+export { Init, GetBoard, GetTurn, GetTurnCount, GetState, NextTurn, SelectSquare, HighlightSquare, SelectPiece, GetSelectedPiece, GetSelectedSquare, RegRenderTrigger, Update }; 
