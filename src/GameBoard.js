@@ -21,19 +21,20 @@ const startingSquares = {
 	}
 }
 
-function makeSquare(pos, dark) //makes a "square" on the board at the given notation position
+function MakeSquare(pos, dark) //makes a "square" on the board at the given notation position
 {
 	let square = {
+		position: pos, //position in notation format
 		defaultClass: dark ? 'squareDark' : 'squareLight', //default class for square
 		className: dark ? 'squareDark' : 'squareLight', //default class for square
 		highlighted: false,
 		currentlyPossible: false,
 		currentlyTaking: false,
-		GetClass(self) {
-			self.highlighted ? this.defaultClass == 'squareDark' ? self.className = 'squareHighlightDark': self.className = 'squareHighlightLight' : self.className = this.defaultClass;
-			self.currentlyPossible ? self.className = 'squareHighlightPossible': {} ;
-			self.currentlyTaking ? self.className = 'squareHighlightTaking': {} ;
-			return self.className;
+		GetClass() {
+			this.highlighted ? this.defaultClass == 'squareDark' ? this.className = 'squareHighlightDark': this.className = 'squareHighlightLight' : this.className = this.defaultClass;
+			this.currentlyPossible ? this.className = 'squareHighlightPossible': {} ;
+			this.currentlyTaking ? this.className = 'squareHighlightTaking': {} ;
+			return this.className;
 		},
 		SetHover: function(self, value) {self.highlighted = value},
 		SetPossible: function(self, value) {self.currentlyPossible = value},
@@ -50,11 +51,45 @@ function makeSquare(pos, dark) //makes a "square" on the board at the given nota
 	return square;
 }
 
+function Init() {
+	for (let i = 0; i < 8; i++) {
+		let rank = 8-i;
+		for (let j = 0; j < 8; j++) {
+			let file = G.files[j];
+			let pos = file+rank;
+			let dark = (i + j + 1) % 2 == 0 ? true : false; //if odd square is dark
+			board[pos] = MakeSquare(pos, dark);
+			squares.push(board[pos]);
+		}
+	}
+	return true
+}
+
+function CheckForChecks(kingSide) { //checks to see if a king is in check, passed the side of the king to check
+	let pieces = GetPieces();
+	//for each piece, calculate possible moves
+	let allSquaresUnderAttack = [];
+	for (let piece of pieces) {
+		if (piece.side == G.OppSide(kingSide)) {
+			//console.log('checking '+piece.side.name+piece.name+' taking moves for check')
+			for (let move of piece.takingMoves) {
+				console.log('checking move: '+move+' for check on '+kingSide.name+' king' )
+				allSquaresUnderAttack.push(GetBoard()[move]);
+			}
+		}
+	}
+	for (let square of allSquaresUnderAttack) {
+		console.log('checking for '+kingSide.name+' king in check at '+square.position)
+		if (square.currentPiece.name == 'King') return true;
+	}
+	return false;
+}
+
 function MovePiece(from, to) {
 	let movingPiece = board[from].currentPiece;
 	if (movingPiece) {
 		board[to].currentPiece = movingPiece;
-		movingPiece.MovePiece(movingPiece, from, to); //call function on piece to increase movecount and update current position
+		movingPiece.MovePiece(from, to); //call function on piece to increase movecount and update current position
 		board[from].currentPiece = null;
 		return true;
 	}
@@ -71,11 +106,6 @@ function GetPieces()
 	}
 	console.log(pieces);
 	return pieces;
-}
-
-function GetSquares()
-{
-	return squares;
 }
 
 function GetPieceAtPos(pos) {
@@ -114,25 +144,11 @@ function GetXYByPos(pos) {
 	return {x: G.invFiles[file],y: rank}
 }
 
-function Init() {
-	for (let i = 0; i < 8; i++) {
-		let rank = 8-i;
-		for (let j = 0; j < 8; j++) {
-			let file = G.files[j];
-			let pos = file+rank;
-			let dark = (i + j) % 2 == 0 ? true : false; //if odd square is dark
-			board[pos] = makeSquare(pos, dark);
-			squares.push(board[pos]);
-		}
-	}
-	return true
-}
-
 function ClearPossibleMoves(piece) {
 	let i = 0;
 	for (let square of squares) {
 		i++;
-		console.log(i)
+		//console.log(i)
 		square.SetTaking(square, false)
 		square.SetPossible(square, false)
 	}
@@ -149,6 +165,7 @@ function ShowPossibleMoves(piece) {
 	}
 }
 
+function GetBoard() {return board}
 function GetSize() {return 8 } //future expansion for different size boards, used for piece movement rules
 
-export { Init, GetPieceAtPos, GetSquareByPos, GetSquareByXY, GetPosByXY, GetXYByPos, MovePiece, GetPieces, GetSize, ClearPossibleMoves, ShowPossibleMoves }
+export { Init, GetBoard, GetPieceAtPos, GetSquareByPos, GetSquareByXY, GetPosByXY, GetXYByPos, MovePiece, GetPieces, GetSize, ClearPossibleMoves, ShowPossibleMoves }

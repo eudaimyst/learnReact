@@ -1,7 +1,7 @@
 
 const gameStates = { awaitingSelection: {text: 'awaiting selection'}, awaitingPlacement: {text: 'awaiting placement'} }
-const sides = { white: {text: 'White', notation: 'w', color: 'white'}, black: {text: 'Black', notation: 'b', color: 'black'} }
-const OppSide = (side) => side == G.sides.white ? G.sides.black : G.sides.white; //given a side returns the opposing side
+const sides = { white: {name: 'White', notation: 'w', color: 'white'}, black: {name: 'Black', notation: 'b', color: 'black'} }
+const OppSide = (side) => side == sides.white ? sides.black : sides.white; //given a side returns the opposing side
 const files = [['A'], ['B'], ['C'], ['D'], ['E'], ['F'], ['G'], ['H']];
 const invFiles = {A:1, B:2, C:3, D:4, E:5, F:6, G:7, H:8};
 const pieceDefinitions = {
@@ -84,7 +84,8 @@ const pieceDefinitions = {
 const imageFiles = ['bK.png', 'bQ.png', 'bR.png', 'bB.png', 'bN.png', 'bP.png', 'wK.png', 'wQ.png', 'wR.png', 'wB.png', 'wN.png', 'wP.png']
 const pieceDisplayTypes = {
 	not: { type: 'char', values : [ 'bK', 'bQ', 'bR', 'bB', 'bN', 'bP', 'wK', 'wQ', 'wR', 'wB', 'wN', 'wP' ] }, 
-	ascii: { type: 'char', values : [ '♔', '♕', '♖', '♗', '♘', '♙', '♚', '♛', '♜', '♝', '♞', '♟︎'] }, 
+	ascii: { type: 'char', values : [ '♙', '♔', '♕', '♖', '♗', '♘', '♙', '♔', '♕', '♖', '♗', '♘' ] },
+	ascii2: { type: 'char', values : [ '♙', '♔', '♕', '♖', '♗', '♘', '♟︎', '♚', '♛', '♜', '♝', '♞' ] }, 
 	imga: { type: 'img', folder: 'pieceA' },
 	imgb: { type: 'img', folder: 'pieceB' },
 }

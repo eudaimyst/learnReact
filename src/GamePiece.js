@@ -14,10 +14,10 @@ const MakePiece = (def, side, position) => { //given a definition table for a pi
 		possibleMoves: [], //what moves the piece can make
 		takingMoves: [], //what moves the piece can make that take other pieces
 		className: side == G.sides.white ? 'whitePiece' : 'blackPiece',
-		MovePiece: function (self, from, to)
+		MovePiece: function (from, to)
 		{
-			self.position = to;
-			self.moveCount++;
+			this.position = to;
+			this.moveCount++;
 			console.log(piece, 'moved!')
 		}
 	}
@@ -96,6 +96,7 @@ function CalculateMoves(piece) {
 		}
 	}
 	//console.log(piece.side.text+piece.name+': '+piece.possibleMoves);
+	
 	return true
 }
 

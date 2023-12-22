@@ -7,6 +7,8 @@ let turnCount = 0;
 let state = null;
 let selectedSquare = null;
 let selectedPiece = null;
+let whiteChecked = false;
+let blackChecked = false;
 
 let pieces = []; //after board is created gets reference to all pieces
 
@@ -30,6 +32,15 @@ function Init() {
 	return true;
 }
 
+function UpdateChecks(){
+	CheckForChecks(G.sides.white) ? whiteChecked = true : whiteChecked = false
+	CheckForChecks(G.sides.black) ? blackChecked = true : blackChecked = false
+}
+
+function GetChecks(){
+	return (whiteChecked ? G.sides.white.name : '') + (blackChecked ? G.sides.black.name : '');
+}
+
 function NextTurn() {
 	for (let piece of pieces) { Piece.CalculateMoves(piece) } //calculate all available moves for all available pieces
 	if (turn === G.sides.white) turn = G.sides.black;
@@ -40,6 +51,7 @@ function NextTurn() {
 	Board.ClearPossibleMoves(selectedPiece);
 	console.log("post possible moves: ", selectedPiece);
 	selectedPiece = null;
+	UpdateChecks();
 	return true;
 }
 
@@ -108,11 +120,10 @@ function HighlightSquare(pos, hover) {
 	else return false; //no square at provided pos on the board
 }
 
-const GetBoard = () => Board;
 const GetTurn = () => turn;
 const GetTurnCount = () => turnCount;
 const GetState = () => state;
 const GetSelectedPiece = () => selectedPiece;
 const GetSelectedSquare = () => selectedSquare;
 
-export { Init, GetBoard, GetTurn, GetTurnCount, GetState, NextTurn, SelectSquare, HighlightSquare, SelectPiece, GetSelectedPiece, GetSelectedSquare, RegRenderTrigger, Update }; 
+export { Init, GetTurn, GetTurnCount, GetState, GetChecks, NextTurn, SelectSquare, HighlightSquare, SelectPiece, GetSelectedPiece, GetSelectedSquare, RegRenderTrigger, Update }; 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import * as Game from "./Game.js";
 import * as G from "./Globals.js";
+import { GetSquareByPos } from './GameBoard.js';
 
 Game.Init() ? console.log("Game initialized") : console.log("Game failed to initialize");
 
@@ -9,20 +10,22 @@ export default function App() {
 	function adjustPieceDisplay(value) {
 		setPieceDisplay(value)
 	}
-	const [pieceDisplay, setPieceDisplay] = useState('not');
+	const [pieceDisplay, setPieceDisplay] = useState('imga');
 	const StateDisplay = <>
-	<p key = 'piece line'><select key = 'pieceDisplay' 
+	<p key = 'piece line'>Pieces: <select key = 'pieceDisplay' 
           onChange={e => adjustPieceDisplay(e.target.value)}>
-		<option value='not'>Notation</option>
+		<option value='imga'>Image</option>
 		<option value='ascii'>Ascii</option>
-		<option value='imga'>ImageA</option>
+		<option value='ascii2'>AsciiB</option>
+		<option value='not'>Notation</option>
 		<option value='imgb'>ImageB</option>
-	</select>{pieceDisplay}</p>
+	</select></p>
 	<p key = 'turnDisp'>Turn: {Game.GetTurnCount()+", "+Game.GetTurn().text}</p>
 	<p key = 'stateDisp'>State: {Game.GetState().text}</p>
 	<p key = 'selectedSquareDisp'>selectedSquare:{Game.GetSelectedSquare()}</p>
 	<p key = 'selectedPieceDisp'> selectedPiece:{Game.GetSelectedPiece() ? Game.GetSelectedPiece().side.text+' '+Game.GetSelectedPiece().name:''}</p>
 	<p key = 'validMovesDisp'> validMoves:{Game.GetSelectedPiece() ? Game.GetSelectedPiece().possibleMoves : ''}</p>
+	<p key = 'checksDisp'> checks:{Game.GetChecks()}</p>
 	</>
 	let renderArray = []; //holds container and any other elements to render	
 	let boardArray = [] //row elements are added to this
@@ -36,7 +39,7 @@ export default function App() {
 		}
 		function square(row, col) {
 			const pos = G.files[col]+(8-row); //position in notation format of row and col
-			const square = Game.GetBoard().GetSquareByPos(pos); //gets reference to square object on game board at this position
+			const square = GetSquareByPos(pos); //gets reference to square object on game board at this position
 
 			//interaction handlers for squares
 			function handleClick(pos) {
@@ -45,11 +48,11 @@ export default function App() {
 				Game.Update();
 			}
 			function handleHover(pos, enter) {
-				console.log(enter ? 'hover: '+pos : 'unhover: '+pos);
+				//console.log(enter ? 'hover: '+pos : 'unhover: '+pos);
 				Game.HighlightSquare(pos, enter);
 				Game.Update();
 			}
-			//actual squares used to display pieces
+			//data used in element
 			let piece = '';
 			let displayData = G.pieceDisplayTypes[pieceDisplay]
 			let displayType = displayData['type'];
@@ -58,11 +61,10 @@ export default function App() {
 				if (displayType == 'char') piece = displayData['values'][square.currentPiece.dispID]
 				else if (displayType == 'img') {
 					let imageString = '/images/'+displayData['folder']+'/'+G.imageFiles[square.currentPiece.dispID]
-					console.log(imageString)
 					piece = <img key = {pos+'pieceImage'} className='pieceImg' src={imageString} />
 				}
 			}
-			
+			//return the element
 			return (
 			<button className={square.GetClass(square)} key={pos}
 				onClick={ () => {handleClick(pos)} }
