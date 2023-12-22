@@ -10,13 +10,14 @@ export default function App() {
 	const stateDisp = <p key = 'stateDisp'>State: {Game.GetState().text}</p>;
 	const selectedSquareDisp = <p key = 'selectedSquareDisp'>selectedSquare:{Game.GetSelectedSquare()}</p>;
 	const selectedPieceDisp = <p key = 'selectedPieceDisp'> selectedPiece:{Game.GetSelectedPiece() ? Game.GetSelectedPiece().side.text+' '+Game.GetSelectedPiece().name:''}</p>; // (if) x ?(then) y :(else) z 
-	let renderArray = [];
-	let board = [];
+	const validMovesDisp = <p key = 'validMovesDisp'> validMoves:{Game.GetSelectedPiece() ? Game.GetSelectedPiece().possibleMoves : ''}</p>;
+	let renderArray = []; //holds container and any other elements to render
+	let board = []; //board elements to place in a container div
 	BoardLayout().forEach((element, i) => { //calls BoardElements to build rows and squares and adds them to array
 		board.push(element);
 	});
 	let boardContainer = <div key="boardContainer">{board}</div>;
-	renderArray.push(turnDisp, stateDisp, selectedSquareDisp, selectedPieceDisp, boardContainer )
+	renderArray.push(turnDisp, stateDisp, selectedSquareDisp, selectedPieceDisp, validMovesDisp, boardContainer )
 
 
 	//useState workaround to trigger re-renders as fn Update
@@ -38,22 +39,30 @@ function BoardLayout() {
 		for (let i = 0; i < 8; i++) {
 			rowArray.push(square( (i + alt) % 2 == 0 ? true : false, count, i));//if odd square is dark
 		}
+		
 		function square(dark, row, col) {
 			const pos = G.files[col]+(8-row); //position in notation format of row and col
+			const defaultClass = dark ? 'squareDark' : 'squareLight'; //default class for square
+			let squareClass = defaultClass;
+
 			function handleClick(pos) {
 				console.log('-----------------------\npos: ' + pos + ' clicked');
 				Game.SelectSquare(pos);
 				Game.Update();
 			}
+			
 			function handleHover(pos, enter) {
-				//console.log('hovering over: '+pos);
+				console.log('hovering over: '+pos);
+				squareClass = enter ? 'squareHover' : defaultClass; 
+				console.log(squareClass);
 				Game.HighlightSquare(pos);
 				Game.Update();
-
 			}
-			return <button className={dark ? 'squareDark' : 'squareLight'} key={pos} onClick={ () => {handleClick(pos)}} onMouseEnter={() => {handleHover(pos, true)}} onMouseLeave={() => {handleHover(pos, false)}}>
+
+			return <button className={squareClass} key={pos} onClick={ () => {handleClick(pos)}} onMouseEnter={() => {handleHover(pos, true)}} onMouseLeave={() => {handleHover(pos, false)}}>
 				{Game.GetBoard().GetPieceAtPos(pos) ? Game.GetBoard().GetPieceAtPos(pos).notation : '' }   
 			</button>;
+			
 		}
 		let fileNotation = <button className='square' key = {'file'+G.files[count]}>{G.files[count]}</button>
 		return <div className='board-row' key = {'row'+ count} >{rowArray}{fileNotation}</div>;

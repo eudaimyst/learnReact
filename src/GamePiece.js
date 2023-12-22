@@ -36,7 +36,7 @@ function CalculateMoves(piece) {
 	let p = Board.GetXYByPos(piece.position);
 	let pos = { x: parseInt(p.x), y: parseInt(p.y) }; //xy coords of piece
 	let dir = piece.rules.directions; //the directions the piece can move in (e.g. [ {x: 1, y: 0}, {x: 0, y: 1} ] )
-	if (piece.rules.firstMove && piece.moveCount == 0) dir = piece.rules.firstMove;
+	if (piece.rules.firstMove && piece.moveCount == 0) dir = piece.rules.firstMove; //if piece has rules for first move (pawns), use them instead
 	for (let i = 0; i < dir.length; i++) //for each direction
 	{
 		let x = parseInt(dir[i].x), y = parseInt(dir[i].y); //proposed x/y directions per movement rules
@@ -50,11 +50,15 @@ function CalculateMoves(piece) {
 					let cPiece = Board.GetPieceAtPos(cPos); //check for a piece at the square
 					if (cPiece) { 
 						if (cPiece.side != piece.side) { //if the piece is on the opposite side
-							piece.possibleMoves.push(cPos)
-							piece.takingMoves.push(cPos) //this is a taking move
+							if (piece.takingMoves) {}//if this piece has it's own rules about what can moves can take pieces (pawns)
+							else
+							{
+								piece.possibleMoves.push(cPos)
+								piece.takingMoves.push(cPos) //this is a taking move
+							}
 							//console.log('success: adding to possible + taking moves')
 						}
-						//this is actually unecessary unless making custom rules for pieces, horses don't "jump" pieces they just check directly target positions
+						//this is actually unecessary unless making custom rules for pieces, knights don't "jump" pieces they just check directly target positions
 						if (!piece.jumps) pathBlocked = true; //if this piece can't jump other pieces set pathBlocked to true to stop looking in this direction
 					}
 					else { //square is empty
@@ -67,8 +71,32 @@ function CalculateMoves(piece) {
 			//else console.log('ignoring: blocked path');
 		}
 	}
-	console.log(piece.side.text+piece.name+': '+piece.possibleMoves);
-	//console.log(piece);
+	if (piece.rules.takingDirections)
+	{
+		let dir = piece.rules.takingDirections;
+		for (let i = 0; i < dir.length; i++) //check taking moves (pawns)
+		{
+			let x = parseInt(dir[i].x), y = parseInt(dir[i].y); //proposed x/y directions per movement rules
+			let pathBlocked = false; //if piecefound on checked square, then path is blocked no further moves in that direction
+			let cx = x+pos.x, cy =y+pos.y; //xy position to check
+			console.log('piece: '+piece.name+' at position: '+piece.position+' checking validity of taking move: ', cx, cy)
+			let cPos = Board.GetPosByXY(cx, cy); //check coords are on board
+			if (cPos) {
+				let cPiece = Board.GetPieceAtPos(cPos); //check for a piece at the square
+				if (cPiece) { 
+					if (cPiece.side != piece.side) { //if the piece is on the opposite side
+						piece.possibleMoves.push(cPos)
+						piece.takingMoves.push(cPos) //this is a taking move
+						console.log('success: adding to possible + taking moves')
+					}
+					else console.log('ignoring: piece on same side');
+				}
+				else console.log('ignoring: no piece at position');
+			}
+			else console.log('ignoring: outside board');
+		}
+	}
+	//console.log(piece.side.text+piece.name+': '+piece.possibleMoves);
 	return true
 }
 

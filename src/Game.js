@@ -37,6 +37,7 @@ function NextTurn() {
 	else return false; //misassigned turn variable
 	state = G.gameStates.awaitingSelection; //initial state of any turn is to wait selecting a peice
 	turnCount++
+	selectedPiece = null;
 	return true;
 }
 
@@ -77,6 +78,10 @@ function PlacePiece (pos) {
 			return true;
 		}
 		else {
+			if (selectedPiece == Board.GetPieceAtPos(pos)) {
+				selectedPiece = null;
+				state = G.gameStates.awaitingSelection; console.log('state: '+state.text);
+			}
 			console.log('cant move piece, square is occupied')
 			return false;
 		}
