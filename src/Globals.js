@@ -83,12 +83,11 @@ const pieceDefinitions = {
 
 const imageFiles = ['bK.png', 'bQ.png', 'bR.png', 'bB.png', 'bN.png', 'bP.png', 'wK.png', 'wQ.png', 'wR.png', 'wB.png', 'wN.png', 'wP.png']
 const pieceDisplayTypes = {
-	not: { type: 'string', values : [ 'bK', 'bQ', 'bR', 'bB', 'bN', 'bP', 'wK', 'wQ', 'wR', 'wB', 'wN', 'wP' ] }, 
-	ascii: { type: 'string', values : [ '♔', '♕', '♖', '♗', '♘', '♙', '♚', '♛', '♜', '♝', '♞', '♟︎'] }, 
-	imgA: { type: 'image', folder: 'pieceA' },
-	imgB: { type: 'image', folder: 'pieceA' },
-
+	not: { type: 'char', values : [ 'bK', 'bQ', 'bR', 'bB', 'bN', 'bP', 'wK', 'wQ', 'wR', 'wB', 'wN', 'wP' ] }, 
+	ascii: { type: 'char', values : [ '♔', '♕', '♖', '♗', '♘', '♙', '♚', '♛', '♜', '♝', '♞', '♟︎'] }, 
+	imga: { type: 'img', folder: 'pieceA' },
+	imgb: { type: 'img', folder: 'pieceB' },
 }
 
 
-export { gameStates, sides, pieceDefinitions, files, invFiles, OppSide, pieceDisplayTypes }
+export { gameStates, sides, pieceDefinitions, files, invFiles, OppSide, pieceDisplayTypes, imageFiles }

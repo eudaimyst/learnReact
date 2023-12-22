@@ -4,8 +4,6 @@ import * as G from "./Globals.js";
 
 Game.Init() ? console.log("Game initialized") : console.log("Game failed to initialize");
 
-
-
 export default function App() {
 	//draw stats
 	function adjustPieceDisplay(value) {
@@ -38,7 +36,8 @@ export default function App() {
 		}
 		function square(row, col) {
 			const pos = G.files[col]+(8-row); //position in notation format of row and col
-			const square = Game.GetBoard().GetSquareByPos(pos);
+			const square = Game.GetBoard().GetSquareByPos(pos); //gets reference to square object on game board at this position
+
 			//interaction handlers for squares
 			function handleClick(pos) {
 				console.log('-----------------------\npos: ' + pos + ' clicked');
@@ -51,14 +50,26 @@ export default function App() {
 				Game.Update();
 			}
 			//actual squares used to display pieces
-			const test = square.currentPiece?G.pieceDisplayTypes[pieceDisplay]['values'][square.currentPiece.dispID]:''
+			let piece = '';
+			let displayData = G.pieceDisplayTypes[pieceDisplay]
+			let displayType = displayData['type'];
+			if (square.currentPiece)
+			{
+				if (displayType == 'char') piece = displayData['values'][square.currentPiece.dispID]
+				else if (displayType == 'img') {
+					let imageString = '/images/'+displayData['folder']+'/'+G.imageFiles[square.currentPiece.dispID]
+					console.log(imageString)
+					piece = <img key = {pos+'pieceImage'} className='pieceImg' src={imageString} />
+				}
+			}
+			
 			return (
 			<button className={square.GetClass(square)} key={pos}
 				onClick={ () => {handleClick(pos)} }
 				onMouseEnter={() => {handleHover(pos, true)} }
 				onMouseLeave={() => {handleHover(pos, false)} }>
 				<p key = {pos+'piece'} className={square.currentPiece?square.currentPiece.className:''}> 
-					{ test }
+					{ piece }
 				</p>   
 			</button>)
 		}
