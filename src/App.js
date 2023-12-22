@@ -4,41 +4,32 @@ import * as G from "./Globals.js";
 
 Game.Init() ? console.log("Game initialized") : console.log("Game failed to initialize");
 
+
+
 export default function App() {
-	const [selectedFruit, setSelectedFruit] = useState('not');
+	//draw stats
+	function adjustPieceDisplay(value) {
+		setPieceDisplay(value)
+	}
+	const [pieceDisplay, setPieceDisplay] = useState('not');
 	const StateDisplay = <>
-	<p><select key = 'pieceDisplay' 
-          onChange={e => setSelectedFruit(e.target.value)}>
+	<p key = 'piece line'><select key = 'pieceDisplay' 
+          onChange={e => adjustPieceDisplay(e.target.value)}>
 		<option value='not'>Notation</option>
 		<option value='ascii'>Ascii</option>
 		<option value='imga'>ImageA</option>
 		<option value='imgb'>ImageB</option>
-	</select>{selectedFruit}</p>
+	</select>{pieceDisplay}</p>
 	<p key = 'turnDisp'>Turn: {Game.GetTurnCount()+", "+Game.GetTurn().text}</p>
 	<p key = 'stateDisp'>State: {Game.GetState().text}</p>
 	<p key = 'selectedSquareDisp'>selectedSquare:{Game.GetSelectedSquare()}</p>
 	<p key = 'selectedPieceDisp'> selectedPiece:{Game.GetSelectedPiece() ? Game.GetSelectedPiece().side.text+' '+Game.GetSelectedPiece().name:''}</p>
 	<p key = 'validMovesDisp'> validMoves:{Game.GetSelectedPiece() ? Game.GetSelectedPiece().possibleMoves : ''}</p>
 	</>
-	let renderArray = []; //holds container and any other elements to render
-	let board = []; //board elements to place in a container div
-	BoardLayout().forEach((element, i) => { //calls BoardElements to build rows and squares and adds them to array
-		board.push(element);
-	});
-	let boardContainer = <div key="boardContainer">{board}</div>;
-	renderArray.push(StateDisplay, boardContainer )
-
-
-	//useState workaround to trigger re-renders as fn Update
-	const [renderTrigger, triggerUpdate] = useState(0); //register state variable
-	const Update = () => triggerUpdate(t => t + 1); //iterate using state callback
-	Game.RegRenderTrigger(Update); //pass fn to game to trigger re-render from anywhere
-
-	return <>{renderTrigger}{renderArray}</> //renderTrigger as sibling to ensure renderArray is re-rendered on an update
-}
-
-function BoardLayout() {
+	let renderArray = []; //holds container and any other elements to render	
 	let boardArray = [] //row elements are added to this
+
+	//draw the board
 	for (let i = 0; i < 8; i++) boardArray.push(row(i));
 	function row(count) {
 		let rowArray = []; // square elements are added to this
@@ -48,7 +39,7 @@ function BoardLayout() {
 		function square(row, col) {
 			const pos = G.files[col]+(8-row); //position in notation format of row and col
 			const square = Game.GetBoard().GetSquareByPos(pos);
-
+			//interaction handlers for squares
 			function handleClick(pos) {
 				console.log('-----------------------\npos: ' + pos + ' clicked');
 				Game.SelectSquare(pos);
@@ -59,13 +50,15 @@ function BoardLayout() {
 				Game.HighlightSquare(pos, enter);
 				Game.Update();
 			}
+			//actual squares used to display pieces
+			const test = square.currentPiece?G.pieceDisplayTypes[pieceDisplay]['values'][square.currentPiece.dispID]:''
 			return (
 			<button className={square.GetClass(square)} key={pos}
 				onClick={ () => {handleClick(pos)} }
 				onMouseEnter={() => {handleHover(pos, true)} }
 				onMouseLeave={() => {handleHover(pos, false)} }>
 				<p key = {pos+'piece'} className={square.currentPiece?square.currentPiece.className:''}> 
-					{square.currentPiece?square.currentPiece.notation:''}
+					{ test }
 				</p>   
 			</button>)
 		}
@@ -76,5 +69,15 @@ function BoardLayout() {
 		let rankNotation = <button className='square' key = {'rank'+i} >{i}</button>
 		boardArray.push(rankNotation);
 	}
-	return boardArray;
+
+	let boardContainer = <div key="boardContainer">{boardArray}</div>;
+	renderArray.push(StateDisplay, boardContainer )
+
+
+	//useState workaround to trigger re-renders as fn Update
+	const [renderTrigger, triggerUpdate] = useState(0); //register state variable
+	const Update = () => triggerUpdate(t => t + 1); //iterate using state callback
+	Game.RegRenderTrigger(Update); //pass fn to game to trigger re-render from anywhere
+
+	return <>{renderTrigger}{renderArray}</> //renderTrigger as sibling to ensure renderArray is re-rendered on an update
 }

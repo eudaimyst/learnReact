@@ -9,10 +9,10 @@ const MakePiece = (def, side, position) => { //given a definition table for a pi
 		position: position,
 		jumps: def.jumps,
 		rules: def.movementRules,
-		hasMoved: false,
+		dispID: def.dispID, //used to pick display from array (img, ascii, etc)
 		moveCount: 0, //track how many moves a piece has made this game (for pawns and fun)
-		possibleMoves: [],
-		takingMoves: [],
+		possibleMoves: [], //what moves the piece can make
+		takingMoves: [], //what moves the piece can make that take other pieces
 		className: side == G.sides.white ? 'whitePiece' : 'blackPiece',
 		MovePiece: function (self, from, to)
 		{
@@ -21,7 +21,8 @@ const MakePiece = (def, side, position) => { //given a definition table for a pi
 			console.log(piece, 'moved!')
 		}
 	}
-	piece.MovePiece
+	//adds # of pieces to dispID for black side to account for all pieces
+	side == G.sides.white ? piece.dispID = Object.keys(G.pieceDefinitions).length-1 + piece.dispID : piece.dispID
 	//console.log("BASDFASFAS");
 	//for each rule in the pieces piece.rules
 	//console.log(piece.rules)

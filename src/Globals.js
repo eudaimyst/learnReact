@@ -8,6 +8,7 @@ const pieceDefinitions = {
 	king: {
 		notation: 'K',
 		name: 'King',
+		dispID: 0,
 		movementRules: {
 			directions: [ {x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1},{x: -1, y: 1},{x: -1, y: 0},{x: -1, y: -1},{x: 0, y: -1},{x: 1, y: -1} ],
 			maxMoves: 1,
@@ -17,6 +18,7 @@ const pieceDefinitions = {
 	queen: {
 		notation: 'Q',
 		name: 'Queen',
+		dispID: 1,
 		movementRules: {
 			directions: [ {x: 1, y: 0},{x: 1, y: 1},{x: 0, y: 1},{x: -1, y: 1},{x: -1, y: 0},{x: -1, y: -1},{x: 0, y: -1},{x: 1, y: -1} ],
 			maxMoves: -1,
@@ -26,6 +28,7 @@ const pieceDefinitions = {
 	bishop: {
 		notation: 'B',
 		name: 'Bishop',
+		dispID: 3,
 		movementRules: {
 			directions: [ {x: 1, y: 1},{x: -1, y: 1},{x: -1, y: -1},{x: 1, y: -1} ],
 			maxMoves: -1,
@@ -35,6 +38,7 @@ const pieceDefinitions = {
 	rook: {
 		notation: 'R',
 		name: 'Rook',
+		dispID: 2,
 		movementRules: {
 			directions: [ {x: 1, y: 0},{x: -1, y: 0},{x: 0, y: 1},{x: 0, y: -1} ],
 			maxMoves: -1,
@@ -44,6 +48,7 @@ const pieceDefinitions = {
 	whitePawn: {
 		notation: 'P',
 		name: 'Pawn',
+		dispID: 5,
 		movementRules: {
 			directions: [ {x: 0, y: 1} ],
 			firstMove: [ {x: 0, y: 1}, {x: 0, y: 2} ], //for pawns that can move 2 squares on their first move
@@ -55,6 +60,7 @@ const pieceDefinitions = {
 	blackPawn: {
 		notation: 'P',
 		name: 'Pawn',
+		dispID: 5,
 		movementRules: {
 			directions: [ {x: 0, y: -1} ],
 			firstMove: [ {x: 0, y: -1}, {x: 0, y: -2} ], //for pawns that can move 2 squares on their first move
@@ -66,6 +72,7 @@ const pieceDefinitions = {
 	knight: {
 		notation: 'N',
 		name: 'Knight',
+		dispID: 4,
 		movementRules: {
 			directions: [ {x: 1, y: 2}, {x: 2, y: 1}, {x: 2, y: -1}, {x: 1, y: -2}, {x: -1, y: -2}, {x: -2, y: -1}, {x: -2, y: 1}, {x: -1, y: 2} ],
 			maxMoves: 1,
@@ -73,9 +80,15 @@ const pieceDefinitions = {
 		}
 	}
 }
+
+const imageFiles = ['bK.png', 'bQ.png', 'bR.png', 'bB.png', 'bN.png', 'bP.png', 'wK.png', 'wQ.png', 'wR.png', 'wB.png', 'wN.png', 'wP.png']
 const pieceDisplayTypes = {
+	not: { type: 'string', values : [ 'bK', 'bQ', 'bR', 'bB', 'bN', 'bP', 'wK', 'wQ', 'wR', 'wB', 'wN', 'wP' ] }, 
+	ascii: { type: 'string', values : [ '♔', '♕', '♖', '♗', '♘', '♙', '♚', '♛', '♜', '♝', '♞', '♟︎'] }, 
+	imgA: { type: 'image', folder: 'pieceA' },
+	imgB: { type: 'image', folder: 'pieceA' },
 
 }
 
 
-export { gameStates, sides, pieceDefinitions, files, invFiles, OppSide }
+export { gameStates, sides, pieceDefinitions, files, invFiles, OppSide, pieceDisplayTypes }
