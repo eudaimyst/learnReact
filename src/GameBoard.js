@@ -1,7 +1,8 @@
 import * as G from "./Globals.js";
 import { MakePiece } from "./GamePiece.js";
 
-const board = {}
+const board = {};
+const squares = []; //a flat representation of the squares not accesible by position key
 
 let p = G.pieceDefinitions; //just readability
 
@@ -20,9 +21,24 @@ const startingSquares = {
 	}
 }
 
-function makeSquare(pos) //makes a "square" on the board at the given notation position
+function makeSquare(pos, dark) //makes a "square" on the board at the given notation position
 {
-	let square = {};
+	let square = {
+		defaultClass: dark ? 'squareDark' : 'squareLight', //default class for square
+		className: dark ? 'squareDark' : 'squareLight', //default class for square
+		highlighted: false,
+		currentlyPossible: false,
+		currentlyTaking: false,
+		GetClass(self) {
+			self.highlighted ? this.defaultClass == 'squareDark' ? self.className = 'squareHighlightDark': self.className = 'squareHighlightLight' : self.className = this.defaultClass;
+			self.currentlyPossible ? self.className = 'squareHighlightPossible': {} ;
+			self.currentlyTaking ? self.className = 'squareHighlightTaking': {} ;
+			return self.className;
+		},
+		SetHover: function(self, value) {self.highlighted = value},
+		SetPossible: function(self, value) {self.currentlyPossible = value},
+		SetTaking: function(self, value) {self.currentlyTaking = value}
+	};
 	square.currentPiece = null;
 	square.selected = false;
 	if (startingSquares.white[pos]) {
@@ -57,11 +73,21 @@ function GetPieces()
 	return pieces;
 }
 
+function GetSquares()
+{
+	return squares;
+}
+
 function GetPieceAtPos(pos) {
 	if (board[pos].currentPiece) {
 		return board[pos].currentPiece;
 	}
 	return false;
+}
+
+function GetSquareByPos(pos) {
+	if (board[pos]) return board[pos];
+	return false
 }
 
 function GetSquareByXY(x, y) {
@@ -94,12 +120,35 @@ function Init() {
 		for (let j = 0; j < 8; j++) {
 			let file = G.files[j];
 			let pos = file+rank;
-			board[pos] = makeSquare(pos);
+			let dark = (i + j) % 2 == 0 ? true : false; //if odd square is dark
+			board[pos] = makeSquare(pos, dark);
+			squares.push(board[pos]);
 		}
 	}
 	return true
 }
 
+function ClearPossibleMoves(piece) {
+	let i = 0;
+	for (let square of squares) {
+		i++;
+		console.log(i)
+		square.SetTaking(square, false)
+		square.SetPossible(square, false)
+	}
+}
+
+function ShowPossibleMoves(piece) {
+	for (let pos of piece.possibleMoves) {
+		let square = GetSquareByPos(pos);
+		if (square) square.SetPossible(square, true);
+	}
+	for (let pos of piece.takingMoves) {
+		let square = GetSquareByPos(pos);
+		if (square) square.SetTaking(square, true);
+	}
+}
+
 function GetSize() {return 8 } //future expansion for different size boards, used for piece movement rules
 
-export { Init, GetPieceAtPos, GetSquareByXY,GetPosByXY, GetXYByPos, MovePiece, GetPieces, GetSize }
+export { Init, GetPieceAtPos, GetSquareByPos, GetSquareByXY, GetPosByXY, GetXYByPos, MovePiece, GetPieces, GetSize, ClearPossibleMoves, ShowPossibleMoves }

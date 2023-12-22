@@ -13,6 +13,7 @@ const MakePiece = (def, side, position) => { //given a definition table for a pi
 		moveCount: 0, //track how many moves a piece has made this game (for pawns and fun)
 		possibleMoves: [],
 		takingMoves: [],
+		className: side == G.sides.white ? 'whitePiece' : 'blackPiece',
 		MovePiece: function (self, from, to)
 		{
 			self.position = to;
@@ -25,7 +26,7 @@ const MakePiece = (def, side, position) => { //given a definition table for a pi
 	//for each rule in the pieces piece.rules
 	//console.log(piece.rules)
 	if (piece.rules.maxMoves == -1) piece.rules.maxMoves = Board.GetSize() - 1;
-	console.log('setting maxMoves for '+piece.side.text+piece.name+' to '+piece.rules.maxMoves)
+	//console.log('setting maxMoves for '+piece.side.text+piece.name+' to '+piece.rules.maxMoves)
 	//console.log(piece)
 	return piece
 }
@@ -37,8 +38,7 @@ function CalculateMoves(piece) {
 	let pos = { x: parseInt(p.x), y: parseInt(p.y) }; //xy coords of piece
 	let dir = piece.rules.directions; //the directions the piece can move in (e.g. [ {x: 1, y: 0}, {x: 0, y: 1} ] )
 	if (piece.rules.firstMove && piece.moveCount == 0) dir = piece.rules.firstMove; //if piece has rules for first move (pawns), use them instead
-	for (let i = 0; i < dir.length; i++) //for each direction
-	{
+	for (let i = 0; i < dir.length; i++) {//for each direction
 		let x = parseInt(dir[i].x), y = parseInt(dir[i].y); //proposed x/y directions per movement rules
 		let pathBlocked = false; //if piecefound on checked square, then path is blocked no further moves in that direction
 		for (let j = 1; j <= piece.rules.maxMoves; j++) { //for how many squares in that direction )
@@ -50,9 +50,7 @@ function CalculateMoves(piece) {
 					let cPiece = Board.GetPieceAtPos(cPos); //check for a piece at the square
 					if (cPiece) { 
 						if (cPiece.side != piece.side) { //if the piece is on the opposite side
-							if (piece.takingMoves) {}//if this piece has it's own rules about what can moves can take pieces (pawns)
-							else
-							{
+							if (!piece.rules.takingDirections) {//if this piece doesn't have rules about what can moves can take pieces (pawns)
 								piece.possibleMoves.push(cPos)
 								piece.takingMoves.push(cPos) //this is a taking move
 							}
@@ -79,7 +77,7 @@ function CalculateMoves(piece) {
 			let x = parseInt(dir[i].x), y = parseInt(dir[i].y); //proposed x/y directions per movement rules
 			let pathBlocked = false; //if piecefound on checked square, then path is blocked no further moves in that direction
 			let cx = x+pos.x, cy =y+pos.y; //xy position to check
-			console.log('piece: '+piece.name+' at position: '+piece.position+' checking validity of taking move: ', cx, cy)
+			//console.log('piece: '+piece.name+' at position: '+piece.position+' checking validity of taking move: ', cx, cy)
 			let cPos = Board.GetPosByXY(cx, cy); //check coords are on board
 			if (cPos) {
 				let cPiece = Board.GetPieceAtPos(cPos); //check for a piece at the square
@@ -87,13 +85,13 @@ function CalculateMoves(piece) {
 					if (cPiece.side != piece.side) { //if the piece is on the opposite side
 						piece.possibleMoves.push(cPos)
 						piece.takingMoves.push(cPos) //this is a taking move
-						console.log('success: adding to possible + taking moves')
+						//console.log('success: adding to possible + taking moves')
 					}
-					else console.log('ignoring: piece on same side');
+					//else console.log('ignoring: piece on same side');
 				}
-				else console.log('ignoring: no piece at position');
+				//else console.log('ignoring: no piece at position');
 			}
-			else console.log('ignoring: outside board');
+			//else console.log('ignoring: outside board');
 		}
 	}
 	//console.log(piece.side.text+piece.name+': '+piece.possibleMoves);

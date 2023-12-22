@@ -77,8 +77,22 @@ body {
   width: 34px;
 }
 
-.squareHover {
-  background: rgb(255, 255, 255);
+.squareHighlightLight {
+  background: #f8eddd;
+  border: 1px solid #999;
+  float: left;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 34px;
+  height: 34px;
+  margin-right: -1px;
+  margin-top: -1px;
+  padding: 0;
+  text-align: center;
+  width: 34px;
+}
+.squareHighlightDark {
+  background: #774f2e;
   border: 1px solid #999;
   float: left;
   font-size: 12px;
@@ -121,6 +135,44 @@ body {
   padding: 0;
   text-align: center;
   width: 34px;
+}
+
+.squareHighlightPossible {
+  background: #b2f7b0;
+  border: 1px solid #999;
+  float: left;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 34px;
+  height: 34px;
+  margin-right: -1px;
+  margin-top: -1px;
+  padding: 0;
+  text-align: center;
+  width: 34px;
+}
+
+.squareHighlightTaking {
+  background: #e67e7e;
+  border: 1px solid #999;
+  float: left;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 34px;
+  height: 34px;
+  margin-right: -1px;
+  margin-top: -1px;
+  padding: 0;
+  text-align: center;
+  width: 34px;
+}
+
+.blackPiece {
+  color: #000000;
+}
+
+.whitePiece {
+  color: #ffffff;
 }
 
 .board-row:after {

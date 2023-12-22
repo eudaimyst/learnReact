@@ -73,6 +73,9 @@ const pieceDefinitions = {
 		}
 	}
 }
+const pieceDisplayTypes = {
+
+}
 
 
 export { gameStates, sides, pieceDefinitions, files, invFiles, OppSide }
