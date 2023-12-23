@@ -3,6 +3,7 @@ import { MakePiece } from "./GamePiece.js";
 
 const board = {};
 const squares = []; //a flat representation of the squares not accesible by position key
+let GetTurn; //gets assigned to Game.js GetTurn function on init()
 
 let p = G.pieceDefinitions; //just readability
 
@@ -28,16 +29,19 @@ function MakeSquare(pos, dark) //makes a "square" on the board at the given nota
 		defaultClass: dark ? 'squareDark' : 'squareLight', //default class for square
 		className: dark ? 'squareDark' : 'squareLight', //default class for square
 		highlighted: false,
-		currentlyPossible: false,
-		currentlyTaking: false,
+		currentlyPossible: false, //move to this square by selected piece is possible
+		currentlyImpossible: false, //move to this square by selected piece puts its king in check
+		currentlyTaking: false, //move to this square by selected piece takes a piece
 		GetClass() {
 			this.highlighted ? this.defaultClass == 'squareDark' ? this.className = 'squareHighlightDark': this.className = 'squareHighlightLight' : this.className = this.defaultClass;
 			this.currentlyPossible ? this.className = 'squareHighlightPossible': {} ;
 			this.currentlyTaking ? this.className = 'squareHighlightTaking': {} ;
+			this.currentlyImpossible ? this.className = 'squareHighlightImpossible': {} ;
 			return this.className;
 		},
 		SetHover: function(self, value) {self.highlighted = value},
 		SetPossible: function(self, value) {self.currentlyPossible = value},
+		SetImpossible: function(self, value) {self.currentlyImpossible = value},
 		SetTaking: function(self, value) {self.currentlyTaking = value}
 	};
 	square.currentPiece = null;
@@ -51,7 +55,8 @@ function MakeSquare(pos, dark) //makes a "square" on the board at the given nota
 	return square;
 }
 
-function Init() {
+function Init(GetTurnFunc) {
+	GetTurn = GetTurnFunc;
 	for (let i = 0; i < 8; i++) {
 		let rank = 8-i;
 		for (let j = 0; j < 8; j++) {
@@ -65,32 +70,56 @@ function Init() {
 	return true
 }
 
+function MoveMakesCheck(piece, from, to) { //checks if a specific move will place a king in check
+	if (piece.side == G.OppSide(GetTurn())) return false; //ignore moves of pieces whose turn it is not 
+	//do move
+	console.log('---------------------\nchecking if moving '+piece.side.name+piece.name+' from '+from+" to "+to+' makes check\n---------------------')
+	let makesCheck = false
+	let pieceAtSquare = board[to].currentPiece;
+	MovePiece(from, to, true);
+	if (CheckForChecks(piece.side)) {
+		makesCheck = true
+		console.log('RESULT: move DOES make check');
+	}
+	else console.log('RESULT: move DOES NOT make check');
+	//undo move
+	MovePiece(to, from, true);
+	if (pieceAtSquare) {
+		board[to].currentPiece = pieceAtSquare;
+		pieceAtSquare.position = to;
+	}
+	return makesCheck
+}
+
 function CheckForChecks(kingSide) { //checks to see if a king is in check, passed the side of the king to check
-	let pieces = GetPieces();
+	let pieces = GetPieces(); 
 	//for each piece, calculate possible moves
 	let allSquaresUnderAttack = [];
 	for (let piece of pieces) {
 		if (piece.side == G.OppSide(kingSide)) {
-			//console.log('checking '+piece.side.name+piece.name+' taking moves for check')
+			console.log('checking '+piece.side.name+piece.name+' taking moves for check')
+			console.log('has this many taking moves'+piece.takingMoves.length)
 			for (let move of piece.takingMoves) {
-				console.log('checking move: '+move+' for check on '+kingSide.name+' king' )
+				console.log('checking move: '+move+' for check on '+kingSide.name+' king. By '+piece.name )
 				allSquaresUnderAttack.push(GetBoard()[move]);
 			}
 		}
 	}
 	for (let square of allSquaresUnderAttack) {
 		console.log('checking for '+kingSide.name+' king in check at '+square.position)
-		if (square.currentPiece.name == 'King') return true;
+		if (!square.currentPiece) console.log("square under attack that doesn't have a piece");
+		else if (square.currentPiece.side == kingSide && square.currentPiece.name == 'King') return true;
 	}
 	return false;
 }
 
-function MovePiece(from, to) {
-	let movingPiece = board[from].currentPiece;
+function MovePiece(from, to, testing) { //testing = testing for check
+	//if (testing == null) testing = false;
+	let movingPiece = board[from].currentPiece; //the piece that is moving
 	if (movingPiece) {
-		board[to].currentPiece = movingPiece;
-		movingPiece.MovePiece(from, to); //call function on piece to increase movecount and update current position
-		board[from].currentPiece = null;
+		board[to].currentPiece = movingPiece; //store reference to the piece at the new position
+		movingPiece.MovePiece(to, testing); //call function on piece to increase movecount and update current position
+		board[from].currentPiece = null; //clear reference at the position the piece was at
 		return true;
 	}
 	console.log('Error: no piece to move');
@@ -104,7 +133,7 @@ function GetPieces()
 	for (let pos in board) {
 		if (board[pos].currentPiece) pieces.push(board[pos].currentPiece);
 	}
-	console.log(pieces);
+	//console.log(pieces);
 	return pieces;
 }
 
@@ -144,7 +173,7 @@ function GetXYByPos(pos) {
 	return {x: G.invFiles[file],y: rank}
 }
 
-function ClearPossibleMoves(piece) {
+function ClearPossibleMoves() {
 	let i = 0;
 	for (let square of squares) {
 		i++;
@@ -163,9 +192,13 @@ function ShowPossibleMoves(piece) {
 		let square = GetSquareByPos(pos);
 		if (square) square.SetTaking(square, true);
 	}
+	for (let pos of piece.impossibleMoves) {
+		let square = GetSquareByPos(pos);
+		if (square) square.SetImpossible(square, true);
+	}
 }
 
 function GetBoard() {return board}
 function GetSize() {return 8 } //future expansion for different size boards, used for piece movement rules
 
-export { Init, GetBoard, GetPieceAtPos, GetSquareByPos, GetSquareByXY, GetPosByXY, GetXYByPos, MovePiece, GetPieces, GetSize, ClearPossibleMoves, ShowPossibleMoves }
+export { Init, GetBoard, GetPieceAtPos, GetSquareByPos, GetSquareByXY, GetPosByXY, GetXYByPos, MovePiece, GetPieces, GetSize, ClearPossibleMoves, MoveMakesCheck, ShowPossibleMoves, CheckForChecks }

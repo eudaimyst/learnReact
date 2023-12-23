@@ -22,19 +22,19 @@ function Update() {
 
 function Init() {
 	console.log('Initializing game setup');
-	Board.Init() ? console.log('board initialized') : console.log('board failed to initialize');
+	Board.Init(GetTurn) ? console.log('board initialized') : console.log('board failed to initialize'); //pass the GetTurn function to the board for checking checks
 	pieces = Board.GetPieces();
-	//for each piece, calculate possible moves
-	for (let piece of pieces) { Piece.CalculateMoves(piece) }
 	turn = G.sides.white;	
+	//for each piece, calculate possible moves
+	for (let piece of pieces) { Piece.CalculateMoves(piece, turn) }
 	state = G.gameStates.awaitingSelection;
 	turnCount = 1
 	return true;
 }
 
 function UpdateChecks(){
-	CheckForChecks(G.sides.white) ? whiteChecked = true : whiteChecked = false
-	CheckForChecks(G.sides.black) ? blackChecked = true : blackChecked = false
+	Board.CheckForChecks(G.sides.white) ? whiteChecked = true : whiteChecked = false
+	Board.CheckForChecks(G.sides.black) ? blackChecked = true : blackChecked = false
 }
 
 function GetChecks(){
@@ -42,13 +42,18 @@ function GetChecks(){
 }
 
 function NextTurn() {
-	for (let piece of pieces) { Piece.CalculateMoves(piece) } //calculate all available moves for all available pieces
 	if (turn === G.sides.white) turn = G.sides.black;
 	else if (turn === G.sides.black) turn = G.sides.white;
 	else return false; //misassigned turn variable
+	for (let piece of pieces) { //calculate all available moves for all available pieces
+		Piece.CalculateMoves(piece, turn)
+	}
+	for (let piece of pieces) { //after this is done we check checks (important to be done after all pieces as uses their possible moves to calc checks)
+		piece.CheckChecking();
+	}
 	state = G.gameStates.awaitingSelection; //initial state of any turn is to wait selecting a peice
 	turnCount++;
-	Board.ClearPossibleMoves(selectedPiece);
+	Board.ClearPossibleMoves(); //clears the display of possible moves (square color)
 	console.log("post possible moves: ", selectedPiece);
 	selectedPiece = null;
 	UpdateChecks();
@@ -60,7 +65,7 @@ function SelectPiece (pos) {
 
 	if (piece == false) return false; //no piece at provided pos on the board
 	else if (piece.side == turn) { //selected piece of correct side 
-		Board.ShowPossibleMoves(piece); //show all possible moves for selected piece
+		Board.ShowPossibleMoves(piece); //shows the display of possible moves (square color)
 		//console.log('correct side, selected '+piece.name);
 		selectedPiece = piece;
 		state = G.gameStates.awaitingPlacement; //console.log('state: '+state.text);
@@ -93,8 +98,8 @@ function PlacePiece (pos) {
 		}
 		else {
 			if (selectedPiece == Board.GetPieceAtPos(pos)) { //same piece clicked again - deselect
-				console.log('fdjskal');
-				Board.ClearPossibleMoves(selectedPiece);
+				//console.log('fdjskal');
+				Board.ClearPossibleMoves();
 				selectedPiece = null;
 				state = G.gameStates.awaitingSelection; console.log('state: '+state.text);
 			}

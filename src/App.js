@@ -20,7 +20,7 @@ export default function App() {
 		<option value='not'>Notation</option>
 		<option value='imgb'>ImageB</option>
 	</select></p>
-	<p key = 'turnDisp'>Turn: {Game.GetTurnCount()+", "+Game.GetTurn().text}</p>
+	<p key = 'turnDisp'>Turn: {Game.GetTurnCount()+", "+Game.GetTurn().name}</p>
 	<p key = 'stateDisp'>State: {Game.GetState().text}</p>
 	<p key = 'selectedSquareDisp'>selectedSquare:{Game.GetSelectedSquare()}</p>
 	<p key = 'selectedPieceDisp'> selectedPiece:{Game.GetSelectedPiece() ? Game.GetSelectedPiece().side.text+' '+Game.GetSelectedPiece().name:''}</p>
@@ -75,12 +75,12 @@ export default function App() {
 				</p>   
 			</button>)
 		}
-		let fileNotation = <button className='square' key = {'file'+G.files[count]}>{G.files[count]}</button>
-		return <div className='board-row' key = {'row'+ count} >{rowArray}{fileNotation}</div>;
+		let rankNotation = <button className='square' key = {'rank'+8-count} >{8-count}</button>
+		return <div className='board-row' key = {'row'+ count} >{rowArray}{rankNotation}</div>;
 	}
 	for (let i = 1; i <= 8; i++) {
-		let rankNotation = <button className='square' key = {'rank'+i} >{i}</button>
-		boardArray.push(rankNotation);
+		let fileNotation = <button className='square' key = {'file'+G.files[i-1]}>{G.files[i-1]}</button>
+		boardArray.push(fileNotation);
 	}
 
 	let boardContainer = <div key="boardContainer">{boardArray}</div>;
